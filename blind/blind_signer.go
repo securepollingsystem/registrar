@@ -1,31 +1,36 @@
 package registrar
 
-import "crypto/ecdsa"
-import "crypto/rand"
-import "fmt"
-import "math/big"
+import (
+       "crypto/ecdsa"
+       "crypto/rand"
+       "fmt"
+       "math/big"
+	   "../secp256k1"
+   )
 
 type BlindSigner struct {
 	// secret stuff
-	d, k *big.Int
+	privateKey, privateSessionKey * big.Int
 
 	// shareable stuff
-	Q *ecdsa.PublicKey
+	PublicKey *ecdsa.PublicKey
 }
 
 // Create a new signer
 func NewSigner() *BlindSigner {
-	generate a s
-	return sState.Q, R
+	PrivKey := ecdsa.GenerateKey(Secp256k1(), rand.Reader)
+	return &BlindSigner{privateKey: PrivKey, PublicKey: PrivKey.PublicKey}
 }
 
 // Create new blinding factor for each session
-func NewSession() (signerKey, sessionKey *ecdsa.PublicKey) {
+func (bs * BlindSigner) NewSession() (signerKey, sessionKey *ecdsa.PublicKey) {
+	PrivKey := ecdsa.GenerateKey(Secp256k1(), rand.Reader)
+	bs.privateSessionKey = PrivKey
+	return bs.PublicKey, PrivKey.PublicKey
 }
 
-
 // Signs a blinded message
-func BlindSign(sState *BlindSignerState, R *ecdsa.PublicKey, mHat *big.Int) *big.Int {
+func (bs * BlindSigner) BlindSign(message *big.Int) *big.Int {
 	crv := Secp256k1().Params()
 
 	// verify that R matches our secret k
