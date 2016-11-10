@@ -7,6 +7,11 @@ import (
 	"math/big"
 )
 
+
+func KeysEqual(a, b *ecdsa.PublicKey) bool {
+	return a.X.Cmp(b.X) == 0 && a.Y.Cmp(b.Y) == 0
+}
+
 // Based on algorithm described in An Efficient Blind Signature Scheme
 // Based on the Elliptic Curve Discrete Logarithm Problem by
 // Nikooghadam and Zakerolhosseini
