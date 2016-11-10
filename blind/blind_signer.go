@@ -32,7 +32,30 @@ func (bs * BlindSignerState) BlindSession() (*ecdsa.PublicKey, *ecdsa.PublicKey)
 }
 
 // Signs a blinded message
+func BlindSign(sState *BlindSignerState, R *ecdsa.PublicKey, mHat *big.Int) *big.Int {
+	crv := Secp256k1().Params()
+
+	// verify that R matches our secret k
+	R_ := ScalarBaseMult(sState.k)
+	if !KeysEqual(R, R_) {
+		panic("unknown R")
+	}
+
+	// signer generates signature (§4.3)
+	sHat := new(big.Int).Mul(sState.d, mHat)
+	sHat.Add(sHat, sState.k)
+	sHat.Mod(sHat, crv.N)
+
+	return sHat
+}
+
+// Signs a blinded message
 func (bs * BlindSignerState) BlindSign(mHat *big.Int) *big.Int {
+	return BlindSign(bs, bs.PublickSessionKey, mHat)
+}
+
+// Signs a blinded message
+func (bs * BlindSignerState) NOBlindSign(mHat *big.Int) *big.Int {
 	crv := Secp256k1().Params()
 
 	// verify that R matches our secret k

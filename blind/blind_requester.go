@@ -44,7 +44,7 @@ func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) *BlindRequesterState {
 	mHat.Add(mHat, a)
 	mHat.Mod(mHat, crv.N)
 
-	return &BlindRequesterState{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat}
+	return &BlindRequesterState{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}
 }
 
 // Calculates a blinded version of message m
@@ -95,6 +95,18 @@ func (br * BlindRequesterState) BlindExtract(sHat *big.Int) *BlindSignature {
 	s.Add(s, br.c)
 	s.Mod(s, crv.N)
 	sig := &BlindSignature{S: s, F: br.F}
+	return sig
+}
+
+// Extract true signature from the blind signature
+func BlindExtract(rState *BlindRequesterState, sHat *big.Int) *BlindSignature {
+	crv := Secp256k1().Params()
+
+	// requester extracts the real signature (§4.4)
+	s := new(big.Int).Mul(rState.bInv, sHat)
+	s.Add(s, rState.c)
+	s.Mod(s, crv.N)
+	sig := &BlindSignature{S: s, F: rState.F}
 	return sig
 }
 
