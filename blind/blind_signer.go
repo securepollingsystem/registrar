@@ -51,11 +51,6 @@ func BlindSign(sState *BlindSignerState, R *ecdsa.PublicKey, mHat *big.Int) *big
 
 // Signs a blinded message
 func (bs * BlindSignerState) BlindSign(mHat *big.Int) *big.Int {
-	return BlindSign(bs, bs.PublickSessionKey, mHat)
-}
-
-// Signs a blinded message
-func (bs * BlindSignerState) NOBlindSign(mHat *big.Int) *big.Int {
 	crv := Secp256k1().Params()
 
 	// verify that R matches our secret k
