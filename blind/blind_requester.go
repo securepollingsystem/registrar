@@ -1,8 +1,11 @@
 package blind
 
-import "crypto/ecdsa"
-import "crypto/rand"
-import "math/big"
+import (
+	"crypto/ecdsa"
+	"crypto/rand"
+	"github.com/securepollingsystem/registrar/secp256k1"
+	"math/big"
+)
 
 type Requester struct {
 	// secret stuff
@@ -18,8 +21,8 @@ func NewRequester() *Requester {
 }
 
 // Calculates a blinded version of message m
-func (r * Requester) BlindMessage(rState *BlindRequesterState, Q, R *ecdsa.PublicKey, m *big.Int) *big.Int {
-	crv := Secp256k1().Params()
+func (r *Requester) BlindMessage(rState *BlindRequesterState, Q, R *ecdsa.PublicKey, m *big.Int) *big.Int {
+	crv := secp256k1.Secp256k1().Params()
 
 	// generate F which is not equal to O (§4.2)
 	var err error
@@ -58,7 +61,7 @@ func (r * Requester) BlindMessage(rState *BlindRequesterState, Q, R *ecdsa.Publi
 
 // Extract true signature from the blind signature
 func (r *Requester) BlindExtract(rState *BlindRequesterState, sHat *big.Int) *BlindSignature {
-	crv := Secp256k1().Params()
+	crv := secp256k1.Secp256k1().Params()
 
 	// requester extracts the real signature (§4.4)
 	s := new(big.Int).Mul(rState.bInv, sHat)

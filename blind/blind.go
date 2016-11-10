@@ -1,8 +1,11 @@
 package blind
 
-import "crypto/ecdsa"
-import "fmt"
-import "math/big"
+import (
+	"crypto/ecdsa"
+	"fmt"
+	"github.com/securepollingsystem/registrar/secp256k1"
+	"math/big"
+)
 
 // Based on algorithm described in An Efficient Blind Signature Scheme
 // Based on the Elliptic Curve Discrete Logarithm Problem by
@@ -14,7 +17,7 @@ type BlindSignature struct {
 }
 
 func BlindVerify(Q *ecdsa.PublicKey, sig *BlindSignature) bool {
-	crv := Secp256k1().Params()
+	crv := secp256k1.Secp256k1().Params()
 
 	// onlooker verifies signature (§4.5)
 	sG := ScalarBaseMult(sig.S)
