@@ -1,4 +1,4 @@
-package btcutil
+package blind
 
 import "crypto/ecdsa"
 import "io"

@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package btcutil
+package blind
 
 // See http://www.hyperelliptic.org/EFD/g1p/auto-shortw.html
 // and http://stackoverflow.com/a/8392111/174463

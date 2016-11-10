@@ -1,4 +1,4 @@
-package btcutil
+package blind
 
 import "io"
 import "math/big"

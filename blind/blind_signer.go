@@ -1,8 +1,7 @@
-package btcutil
+package blind
 
 import "crypto/ecdsa"
 import "crypto/rand"
-import "fmt"
 import "math/big"
 
 type BlindSignerState struct {
@@ -11,43 +10,40 @@ type BlindSignerState struct {
 
 	// shareable stuff
 	Q *ecdsa.PublicKey
+	PublickSessionKey *ecdsa.PublicKey
+}
+
+func NewSigner() *BlindSignerState {
+		keys, _ := GenerateKey(rand.Reader)
+		return &BlindSignerState{d: keys.D, Q: &keys.PublicKey}
 }
 
 // Request that the signer start a blind signature protocol.  Returns
 // the signer's public key and an EC point named R.
-func BlindSession(sState *BlindSignerState) (*ecdsa.PublicKey, *ecdsa.PublicKey) {
-
-	// generate signer's private & public key pair
-	if sState.Q == nil {
-		keys, err := GenerateKey(rand.Reader)
-		maybePanic(err)
-		sState.d = keys.D
-		sState.Q = &keys.PublicKey
-		fmt.Printf("Signer:\t%x\n\t%x\n", sState.d, sState.Q.X)
-	}
+func (bs * BlindSignerState) BlindSession() (*ecdsa.PublicKey, *ecdsa.PublicKey) {
 
 	// generate k and R for each user request (§4.2)
 	request, err := GenerateKey(rand.Reader)
 	maybePanic(err)
-	sState.k = request.D
-	R := &request.PublicKey
+	bs.k = request.D
+	bs.PublickSessionKey = &request.PublicKey
 
-	return sState.Q, R
+	return bs.Q, bs.PublickSessionKey
 }
 
 // Signs a blinded message
-func BlindSign(sState *BlindSignerState, R *ecdsa.PublicKey, mHat *big.Int) *big.Int {
+func (bs * BlindSignerState) BlindSign(mHat *big.Int) *big.Int {
 	crv := Secp256k1().Params()
 
 	// verify that R matches our secret k
-	R_ := ScalarBaseMult(sState.k)
-	if !KeysEqual(R, R_) {
+	R_ := ScalarBaseMult(bs.k)
+	if !KeysEqual(bs.PublickSessionKey, R_) {
 		panic("unknown R")
 	}
 
 	// signer generates signature (§4.3)
-	sHat := new(big.Int).Mul(sState.d, mHat)
-	sHat.Add(sHat, sState.k)
+	sHat := new(big.Int).Mul(bs.d, mHat)
+	sHat.Add(sHat, bs.k)
 	sHat.Mod(sHat, crv.N)
 
 	return sHat
