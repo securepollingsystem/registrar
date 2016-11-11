@@ -15,20 +15,11 @@ type BlindRequester struct {
 	Mhat *big.Int // called m̂ in the paper
 }
 
-func getBlindingFactors() (a, b, c *big.Int, err error) {
-	a, err = RandFieldElement(rand.Reader)
+func randFieldElementUnlessError(err error) (*big.Int, error) {
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
-	b, err = RandFieldElement(rand.Reader)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	c, err = RandFieldElement(rand.Reader)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	return a, b, c, nil
+	return RandFieldElement(rand.Reader)
 }
 
 func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindRequester, error) {
@@ -38,10 +29,13 @@ func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindRequester, error) {
 	F := new(ecdsa.PublicKey)
 	for F.X == nil && F.Y == nil {
 		// requester's three blinding factors (§4.2)
-		a, b, c, err = getBlindingFactors()
+		a, err = randFieldElementUnlessError(err)
+		b, err = randFieldElementUnlessError(err)
+		c, err = randFieldElementUnlessError(err)
 		if err != nil {
 			return nil, err
 		}
+
 		bInv = new(big.Int).ModInverse(b, crv.N)
 
 		// requester calculates point F (§4.2)

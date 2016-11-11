@@ -1,11 +1,17 @@
 package blind
 
-import "crypto/ecdsa"
-import "io"
+import (
+       "io"
+       "crypto/ecdsa"
+	   "crypto/rand"
+)
 
 // GenerateKey generates a public and private key pair
-func GenerateKey(rand io.Reader) (*ecdsa.PrivateKey, error) {
-	return ecdsa.GenerateKey(Secp256k1(), rand)
+func GenerateKey(r io.Reader) (*ecdsa.PrivateKey, error) {
+	if r == nil {
+		r = rand.Reader
+	}
+	return ecdsa.GenerateKey(Secp256k1(), r)
 }
 
 func KeysEqual(a, b *ecdsa.PublicKey) bool {

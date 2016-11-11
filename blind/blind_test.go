@@ -10,11 +10,9 @@ func TestMain(t *testing.T) {
 
 	// requester: message that needs to be blind signed
 	m := new(big.Int).SetBytes([]byte("this is the message to blind-sign"))
-	//m, err := RandFieldElement(rand.Reader)
-	//maybePanic(err)
 
 	// requester: ask signer to start the protocol
-	Q, R, err := signer.BlindSession() // generates signer keypair once, and makes a pair for this request (stores signer pair and request.secret, returns both publics)
+	Q, R, err := signer.BlindSession()
 	if err != nil {
 		t.Fatal()
 	}
@@ -27,7 +25,7 @@ func TestMain(t *testing.T) {
 	}
 
 	// signer: create blind signature
-	sHat, err := signer.BlindSign(requester.Mhat)
+	sHat, err := signer.BlindSign(requester.Mhat, *R)
 	if err != nil {
 		t.Fatal()
 	}
@@ -39,5 +37,14 @@ func TestMain(t *testing.T) {
 	sig.M = m
 	if !BlindVerify(Q, sig) {
 		t.Fatal("valid signature\n")
+	}
+}
+
+func TestNoSession(t *testing.T) {
+	signer := NewSigner()
+	somekey, _ := GenerateKey(nil)
+	_, err := signer.BlindSign(somekey.D, somekey.PublicKey)
+	if err == nil {
+		t.Fatal()
 	}
 }
