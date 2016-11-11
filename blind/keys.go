@@ -1,9 +1,9 @@
 package blind
 
 import (
-       "io"
-       "crypto/ecdsa"
-	   "crypto/rand"
+	"crypto/ecdsa"
+	"crypto/rand"
+	"io"
 )
 
 // GenerateKey generates a public and private key pair

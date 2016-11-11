@@ -10,17 +10,17 @@ import (
 type BlindSigner struct {
 	// permenant keys
 	privateKey *big.Int // signers secret key d
-	PublicKey *ecdsa.PublicKey
+	PublicKey  *ecdsa.PublicKey
 
 	// sessions
-	sessions	 map[ecdsa.PublicKey]*big.Int
+	sessions map[ecdsa.PublicKey]*big.Int
 }
 
 func NewSigner() *BlindSigner {
 	keys, _ := GenerateKey(rand.Reader)
 	sessions := make(map[ecdsa.PublicKey]*big.Int)
 	return &BlindSigner{privateKey: keys.D, PublicKey: &keys.PublicKey,
-						sessions: sessions}
+		sessions: sessions}
 }
 
 // Request that the signer start a blind signature protocol.  Returns
