@@ -1,10 +1,12 @@
 package blind
 
-import "crypto/ecdsa"
-import "crypto/rand"
-import "math/big"
+import (
+	"crypto/ecdsa"
+	"crypto/rand"
+	"math/big"
+)
 
-type BlindRequesterState struct {
+type BlindRequester struct {
 	// secret stuff
 	a, b, bInv, c, m *big.Int
 
@@ -13,19 +15,33 @@ type BlindRequesterState struct {
 	Mhat *big.Int // called m̂ in the paper
 }
 
-func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) *BlindRequesterState {
+func getBlindingFactors() (a, b, c *big.Int, err error) {
+	a, err = RandFieldElement(rand.Reader)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	b, err = RandFieldElement(rand.Reader)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	c, err = RandFieldElement(rand.Reader)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return a, b, c, nil
+}
+
+func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindRequester, error) {
 	var a, b, bInv, c *big.Int
 	var err error
 	crv := Secp256k1().Params()
 	F := new(ecdsa.PublicKey)
 	for F.X == nil && F.Y == nil {
 		// requester's three blinding factors (§4.2)
-		a, err = RandFieldElement(rand.Reader)
-		maybePanic(err)
-		b, err = RandFieldElement(rand.Reader)
-		maybePanic(err)
-		c, err = RandFieldElement(rand.Reader)
-		maybePanic(err)
+		a, b, c, err = getBlindingFactors()
+		if err != nil {
+			return nil, err
+		}
 		bInv = new(big.Int).ModInverse(b, crv.N)
 
 		// requester calculates point F (§4.2)
@@ -44,11 +60,11 @@ func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) *BlindRequesterState {
 	mHat.Add(mHat, a)
 	mHat.Mod(mHat, crv.N)
 
-	return &BlindRequesterState{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}
+	return &BlindRequester{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}, nil
 }
 
 // Extract true signature from the blind signature
-func (br * BlindRequesterState) BlindExtract(sHat *big.Int) *BlindSignature {
+func (br *BlindRequester) BlindExtract(sHat *big.Int) *BlindSignature {
 	crv := Secp256k1().Params()
 
 	// requester extracts the real signature (§4.4)
@@ -57,10 +73,4 @@ func (br * BlindRequesterState) BlindExtract(sHat *big.Int) *BlindSignature {
 	s.Mod(s, crv.N)
 	sig := &BlindSignature{S: s, F: br.F}
 	return sig
-}
-
-func maybePanic(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
