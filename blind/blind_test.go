@@ -6,36 +6,37 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	signer := NewSigner() // init w/Q (*pubkey) and later, d (secret), k (secret for request) but R (pubkey for request) is returned by BlindSession
+	// Create a signer
+	signer := NewSigner()
 
-	// requester: message that needs to be blind signed
+	// Requester's message that needs to be blind-signed
 	m := new(big.Int).SetBytes([]byte("this is the message to blind-sign"))
 
-	// requester: ask signer to start the protocol
-	Q, R, err := signer.BlindSession()
-	if err != nil {
-		t.Fatal()
-	}
-	// fmt.Println(len)
-
-	// requester: blind message
-	requester, err := NewRequest(Q, R, m)
+	// Requester gets the signer's session key and publick key
+	session, pub, err := signer.BlindSession()
 	if err != nil {
 		t.Fatal()
 	}
 
-	// signer: create blind signature
-	sHat, err := signer.BlindSign(requester.Mhat, *R)
+	// Requester blinds her message
+	// nb: the blinded message is the Mhat field on the requester
+	requester, err := NewRequest(session, pub, m)
 	if err != nil {
 		t.Fatal()
 	}
 
-	// requester extracts real signature
+	// Signer signs the message
+	sHat, err := signer.BlindSign(requester.Mhat, *pub)
+	if err != nil {
+		t.Fatal()
+	}
+
+	// Requester unblinds the signature
 	sig := requester.BlindExtract(sHat)
 
-	// onlooker verifies signature
+	// Onlooker verifies signature
 	sig.M = m
-	if !BlindVerify(Q, sig) {
+	if !BlindVerify(session, sig) {
 		t.Fatal("valid signature\n")
 	}
 }
