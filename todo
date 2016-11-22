@@ -1,0 +1,14 @@
+voter:
+	add screeds
+	allow multiple registrars
+	use section section 4.3.6 of ANSI X9.62 to marsher pub key
+	or crypto/elliptic.Marshall
+
+break up into repos:
+	registrar
+	voter
+	blind-utils
+    screed-utils
+
+blind:
+	clean up btcutil parts
