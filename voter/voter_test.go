@@ -11,11 +11,20 @@ func TestVoter(t *testing.T) {
 	pub, session, _ := signer.BlindSession()
 
 	voter := NewVoter()
-	message := voter.RequestRegistration(pub, session)
+	message, err := voter.RequestRegistration(pub, session)
+	if err != nil {
+		t.Fatal()
+	}
 	sig, err := signer.BlindSign(message, *session)
 	if err != nil {
 		t.Fatal()
 	}
 	voter.Register(sig)
+
+	msg := []byte("A screed")
+	_, err = voter.Sign(msg)
+	if err != nil {
+		t.Fatal()
+	}
 	fmt.Println(sig)
 }
