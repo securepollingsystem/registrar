@@ -1,4 +1,6 @@
-package voter
+package main
+
+import "C"
 
 import (
 	"crypto/sha256"
@@ -27,6 +29,7 @@ type VoterSignature struct {
 	S *big.Int
 }
 
+//export NewVoter
 func NewVoter() *Voter {
 	keys, _ := blind.GenerateKey(nil)
 	return &Voter{privateKey: keys,
@@ -34,6 +37,7 @@ func NewVoter() *Voter {
 }
 
 // get response from signer.BlindSession, return blinded v.PublicKey
+//export RequestRegistration
 func (v * Voter) RequestRegistration(pub, session *ecdsa.PublicKey) (blinded *big.Int, err error) {
 	key, err := json.Marshal(v.PublicKey)
 	if err != nil {
@@ -52,12 +56,14 @@ func (v * Voter) RequestRegistration(pub, session *ecdsa.PublicKey) (blinded *bi
 }
 
 // get sig from signer, unblind and store it
+//export Register
 func (v *Voter) Register(blindsig *big.Int) {
 	v.sig = v.requester.BlindExtract(blindsig)
 	v.sig.M = v.pubhash
 }
 
 // sign a thing
+//export Sign
 func (v *Voter) Sign(msg []byte) (*VoterSignature, error) {
 	hasher := sha256.New()
 	hasher.Write(msg)
@@ -68,3 +74,5 @@ func (v *Voter) Sign(msg []byte) (*VoterSignature, error) {
 	}
 	return &VoterSignature{R: r, S: s}, nil
 }
+
+func main(){}
