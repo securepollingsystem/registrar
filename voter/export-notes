@@ -1,0 +1,8 @@
+To export functions from voter.go to python, my plan is to create a shared library that python can wrap with it's cffi package.
+
+To create and shared library you would run 
+
+go build -o voter.so -buildmode=c-shared voter.go
+
+but voter.go uses go types. So we have to use the Cgo to rewrite stuff as exportable types
+this is where I'm stuck. I should define a minimal interface, preferably from the voter_test.go file and try to adapt to that.
