@@ -68,3 +68,8 @@ func (v *Voter) Sign(msg []byte) (*VoterSignature, error) {
 	}
 	return &VoterSignature{R: r, S: s}, nil
 }
+
+func (v *Voter) String() (string, error) {
+	b, err := json.Marshal(v)
+	return string(b), err
+}
