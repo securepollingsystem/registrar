@@ -3,6 +3,7 @@ package blind
 import (
 	"math/big"
 	"testing"
+//	"fmt"
 )
 
 func TestMain(t *testing.T) {
@@ -47,5 +48,18 @@ func TestNoSession(t *testing.T) {
 	_, err := signer.BlindSign(somekey.D, somekey.PublicKey)
 	if err == nil {
 		t.Fatal()
+	}
+}
+
+func TestBlindSignerSerialization(t *testing.T) {
+	signer := NewSigner()
+	s, err := signer.Marshal()
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer2 := NewSignerFromString(s)
+	signer2bytes, _ := signer2.Marshal()
+	if string(signer2bytes) != string(s) {
+		t.Fatal("different values")
 	}
 }
