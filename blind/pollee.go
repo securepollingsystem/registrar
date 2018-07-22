@@ -6,7 +6,7 @@ import (
 	"math/big"
 )
 
-type BlindRequester struct {
+type BlindPollee struct {
 	// secret stuff
 	a, b, bInv, c, m *big.Int
 
@@ -22,13 +22,13 @@ func randFieldElementUnlessError(err error) (*big.Int, error) {
 	return RandFieldElement(rand.Reader)
 }
 
-func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindRequester, error) {
+func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindPollee, error) {
 	var a, b, bInv, c *big.Int
 	var err error
 	crv := Secp256k1().Params()
 	F := new(ecdsa.PublicKey)
 	for F.X == nil && F.Y == nil {
-		// requester's three blinding factors (§4.2)
+		// pollee's three blinding factors (§4.2)
 		a, err = randFieldElementUnlessError(err)
 		b, err = randFieldElementUnlessError(err)
 		c, err = randFieldElementUnlessError(err)
@@ -38,7 +38,7 @@ func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindRequester, error) {
 
 		bInv = new(big.Int).ModInverse(b, crv.N)
 
-		// requester calculates point F (§4.2)
+		// pollee calculates point F (§4.2)
 		abInv := new(big.Int).Mul(a, bInv)
 		abInv.Mod(abInv, crv.N)
 		bInvR := ScalarMult(bInv, R)
@@ -54,14 +54,14 @@ func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindRequester, error) {
 	mHat.Add(mHat, a)
 	mHat.Mod(mHat, crv.N)
 
-	return &BlindRequester{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}, nil
+	return &BlindPollee{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}, nil
 }
 
 // Extract true signature from the blind signature
-func (br *BlindRequester) BlindExtract(sHat *big.Int) *BlindSignature {
+func (br *BlindPollee) BlindExtract(sHat *big.Int) *BlindSignature {
 	crv := Secp256k1().Params()
 
-	// requester extracts the real signature (§4.4)
+	// pollee extracts the real signature (§4.4)
 	s := new(big.Int).Mul(br.bInv, sHat)
 	s.Add(s, br.c)
 	s.Mod(s, crv.N)
