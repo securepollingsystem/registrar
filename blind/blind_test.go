@@ -20,7 +20,7 @@ func TestMain(t *testing.T) {
 
 	// Pollee blinds her message
 	// nb: the blinded message is the Mhat field on the pollee
-	pollee, err := NewRequest(pub, session, m)
+	pollee, err := NewPollee(pub, session, m)
 	if err != nil {
 		t.Fatal()
 	}

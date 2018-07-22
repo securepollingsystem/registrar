@@ -22,7 +22,7 @@ func randFieldElementUnlessError(err error) (*big.Int, error) {
 	return RandFieldElement(rand.Reader)
 }
 
-func NewRequest(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindPollee, error) {
+func NewPollee(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindPollee, error) {
 	var a, b, bInv, c *big.Int
 	var err error
 	crv := Secp256k1().Params()

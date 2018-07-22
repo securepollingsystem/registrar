@@ -44,7 +44,7 @@ func (v *Voter) RequestRegistration(pub, session *ecdsa.PublicKey) (blinded *big
 	hashed := hasher.Sum(nil)
 	v.pubhash = new(big.Int).SetBytes(hashed)
 
-	v.pollee, err = blind.NewRequest(pub, session, v.pubhash)
+	v.pollee, err = blind.NewPollee(pub, session, v.pubhash)
 	if err != nil {
 		return nil, err
 	}
