@@ -28,3 +28,11 @@ func TestVoter(t *testing.T) {
 	}
 	fmt.Println(sig)
 }
+
+func TestVoterString(t *testing.T) {
+	voter := NewVoter()
+	_, err := voter.String()
+	if err != nil {
+		t.Fatal()
+	}
+}

@@ -6,33 +6,33 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	// Create a signer
-	signer := NewSigner()
+	// Create a registrar
+	registrar := NewRegistrar()
 
-	// Requester's message that needs to be blind-signed
+	// Pollee's message that needs to be blind-signed
 	m := new(big.Int).SetBytes([]byte("this is the message to blind-sign"))
 
-	// Requester gets the signer's session key and publick key
-	pub, session, err := signer.BlindSession()
+	// Pollee gets the registrar's session key and publick key
+	pub, session, err := registrar.BlindSession()
 	if err != nil {
 		t.Fatal()
 	}
 
-	// Requester blinds her message
-	// nb: the blinded message is the Mhat field on the requester
-	requester, err := NewRequest(pub, session, m)
+	// Pollee blinds her message
+	// nb: the blinded message is the Mhat field on the pollee
+	pollee, err := NewRequest(pub, session, m)
 	if err != nil {
 		t.Fatal()
 	}
 
-	// Signer signs the message
-	sHat, err := signer.BlindSign(requester.Mhat, *session)
+	// Registrar signs the message
+	sHat, err := registrar.BlindSign(pollee.Mhat, *session)
 	if err != nil {
 		t.Fatal()
 	}
 
-	// Requester unblinds the signature
-	sig := requester.BlindExtract(sHat)
+	// Pollee unblinds the signature
+	sig := pollee.BlindExtract(sHat)
 
 	// Onlooker verifies signature
 	sig.M = m
@@ -42,9 +42,9 @@ func TestMain(t *testing.T) {
 }
 
 func TestNoSession(t *testing.T) {
-	signer := NewSigner()
+	registrar := NewRegistrar()
 	somekey, _ := GenerateKey(nil)
-	_, err := signer.BlindSign(somekey.D, somekey.PublicKey)
+	_, err := registrar.BlindSign(somekey.D, somekey.PublicKey)
 	if err == nil {
 		t.Fatal()
 	}
