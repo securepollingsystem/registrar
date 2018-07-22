@@ -7,25 +7,25 @@ import (
 	"math/big"
 )
 
-type BlindSigner struct {
+type BlindRegistrar struct {
 	// permenant keys
-	privateKey *big.Int // signers secret key d
+	privateKey *big.Int // registrars secret key d
 	PublicKey  *ecdsa.PublicKey
 
 	// sessions
 	sessions map[ecdsa.PublicKey]*big.Int
 }
 
-func NewSigner() *BlindSigner {
+func NewRegistrar() *BlindRegistrar {
 	keys, _ := GenerateKey(rand.Reader)
 	sessions := make(map[ecdsa.PublicKey]*big.Int)
-	return &BlindSigner{privateKey: keys.D, PublicKey: &keys.PublicKey,
+	return &BlindRegistrar{privateKey: keys.D, PublicKey: &keys.PublicKey,
 		sessions: sessions}
 }
 
-// Request that the signer start a blind signature protocol.  Returns
-// the signer's public key and an EC point named R.
-func (bs *BlindSigner) BlindSession() (*ecdsa.PublicKey, *ecdsa.PublicKey, error) {
+// Request that the registrar start a blind signature protocol.  Returns
+// the registrar's public key and an EC point named R.
+func (bs *BlindRegistrar) BlindSession() (*ecdsa.PublicKey, *ecdsa.PublicKey, error) {
 
 	// generate k and R for each user request (§4.2)
 	request, err := GenerateKey(rand.Reader)
@@ -38,7 +38,7 @@ func (bs *BlindSigner) BlindSession() (*ecdsa.PublicKey, *ecdsa.PublicKey, error
 }
 
 // Signs a blinded message
-func (bs *BlindSigner) BlindSign(mHat *big.Int, key ecdsa.PublicKey) (*big.Int, error) {
+func (bs *BlindRegistrar) BlindSign(mHat *big.Int, key ecdsa.PublicKey) (*big.Int, error) {
 	crv := Secp256k1().Params()
 	sessionPrivKey, ok := bs.sessions[key]
 	if !ok {
@@ -51,7 +51,7 @@ func (bs *BlindSigner) BlindSign(mHat *big.Int, key ecdsa.PublicKey) (*big.Int, 
 		return nil, errors.New("Unkown session")
 	}
 
-	// signer generates signature (§4.3)
+	// registrar generates signature (§4.3)
 	sHat := new(big.Int).Mul(bs.privateKey, mHat)
 	sHat.Add(sHat, sessionPrivKey)
 	sHat.Mod(sHat, crv.N)

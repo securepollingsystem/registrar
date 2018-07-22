@@ -6,14 +6,14 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	// Create a signer
-	signer := NewSigner()
+	// Create a registrar
+	registrar := NewRegistrar()
 
 	// Requester's message that needs to be blind-signed
 	m := new(big.Int).SetBytes([]byte("this is the message to blind-sign"))
 
-	// Requester gets the signer's session key and publick key
-	pub, session, err := signer.BlindSession()
+	// Requester gets the registrar's session key and publick key
+	pub, session, err := registrar.BlindSession()
 	if err != nil {
 		t.Fatal()
 	}
@@ -25,8 +25,8 @@ func TestMain(t *testing.T) {
 		t.Fatal()
 	}
 
-	// Signer signs the message
-	sHat, err := signer.BlindSign(requester.Mhat, *session)
+	// Registrar signs the message
+	sHat, err := registrar.BlindSign(requester.Mhat, *session)
 	if err != nil {
 		t.Fatal()
 	}
@@ -42,9 +42,9 @@ func TestMain(t *testing.T) {
 }
 
 func TestNoSession(t *testing.T) {
-	signer := NewSigner()
+	registrar := NewRegistrar()
 	somekey, _ := GenerateKey(nil)
-	_, err := signer.BlindSign(somekey.D, somekey.PublicKey)
+	_, err := registrar.BlindSign(somekey.D, somekey.PublicKey)
 	if err == nil {
 		t.Fatal()
 	}
