@@ -13,14 +13,14 @@ func TestMain(t *testing.T) {
 	m := new(big.Int).SetBytes([]byte("this is the message to blind-sign"))
 
 	// Pollee gets the registrar's session key and publick key
-	pub, session, err := registrar.BlindSession()
+	registrarPub, session, err := registrar.BlindSession()
 	if err != nil {
 		t.Fatal()
 	}
 
 	// Pollee blinds her message
 	// nb: the blinded message is the Mhat field on the pollee
-	pollee, err := NewPollee(pub, session, m)
+	pollee, err := NewPollee(registrarPub, session, m)
 	if err != nil {
 		t.Fatal()
 	}
@@ -36,7 +36,7 @@ func TestMain(t *testing.T) {
 
 	// Onlooker verifies signature
 	sig.M = m
-	if !BlindVerify(pub, sig) {
+	if !BlindVerify(registrarPub, sig) {
 		t.Fatal("valid signature\n")
 	}
 }
