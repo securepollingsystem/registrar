@@ -1,24 +1,24 @@
 package voter
 
 import (
-	"crypto/sha256"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/json"
-	"math/big"
 	"github.com/securepollingsystem/registrar/blind"
+	"math/big"
 )
 
 type Voter struct {
 	privateKey *ecdsa.PrivateKey
 	PublicKey  *ecdsa.PublicKey
 
-	pubhash    *big.Int  // hash of the voters public key, this gets signed by registrar
+	pubhash *big.Int // hash of the voters public key, this gets signed by registrar
 
 	// these will eventually be per registrar
-	sig        *blind.BlindSignature
-	requester *blind.BlindRequester
-	//registrar signer's publickey
+	sig    *blind.BlindSignature
+	pollee *blind.BlindPollee
+	//registrar registrar's publickey
 	//registration session info from blinding
 }
 
@@ -33,8 +33,8 @@ func NewVoter() *Voter {
 		PublicKey: &keys.PublicKey}
 }
 
-// get response from signer.BlindSession, return blinded v.PublicKey
-func (v * Voter) RequestRegistration(pub, session *ecdsa.PublicKey) (blinded *big.Int, err error) {
+// get response from registrar.BlindSession, return blinded v.PublicKey
+func (v *Voter) RequestRegistration(pub, session *ecdsa.PublicKey) (blinded *big.Int, err error) {
 	key, err := json.Marshal(v.PublicKey)
 	if err != nil {
 		return nil, err
@@ -44,16 +44,16 @@ func (v * Voter) RequestRegistration(pub, session *ecdsa.PublicKey) (blinded *bi
 	hashed := hasher.Sum(nil)
 	v.pubhash = new(big.Int).SetBytes(hashed)
 
-	v.requester, err = blind.NewRequest(pub, session, v.pubhash)
+	v.pollee, err = blind.NewRequest(pub, session, v.pubhash)
 	if err != nil {
 		return nil, err
 	}
-	return v.requester.Mhat, nil
+	return v.pollee.Mhat, nil
 }
 
-// get sig from signer, unblind and store it
+// get sig from registrar, unblind and store it
 func (v *Voter) Register(blindsig *big.Int) {
-	v.sig = v.requester.BlindExtract(blindsig)
+	v.sig = v.pollee.BlindExtract(blindsig)
 	v.sig.M = v.pubhash
 }
 
