@@ -7,15 +7,15 @@ import (
 )
 
 func TestVoter(t *testing.T) {
-	signer := blind.NewSigner()
-	pub, session, _ := signer.BlindSession()
+	registrar := blind.NewRegistrar()
+	pub, session, _ := registrar.BlindSession()
 
 	voter := NewVoter()
 	message, err := voter.RequestRegistration(pub, session)
 	if err != nil {
 		t.Fatal()
 	}
-	sig, err := signer.BlindSign(message, *session)
+	sig, err := registrar.BlindSign(message, *session)
 	if err != nil {
 		t.Fatal()
 	}
