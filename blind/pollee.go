@@ -5,6 +5,20 @@ import (
 	"math/big"
 )
 
+type Pollee struct {
+	PublicKey *ecdsa.PublicKey
+	privateKey *big.Int
+	// map of sessions to blindRequests
+}
+
+func NewPollee() (*Pollee, error) {
+	keys, err := GenerateKey()
+	if err != nil {
+		return nil, err
+	}
+	return &Pollee{privateKey: keys.D, PublicKey: &keys.PublicKey}, nil
+}
+
 type BlindRequest struct {
 	// secret stuff
 	a, b, bInv, c, m *big.Int
