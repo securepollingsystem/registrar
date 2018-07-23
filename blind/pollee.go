@@ -19,6 +19,12 @@ func NewPollee() (*Pollee, error) {
 	return &Pollee{privateKey: keys.D, PublicKey: &keys.PublicKey}, nil
 }
 
+func (p *Pollee) NewBlindRequest(session *BlindSession) (*BlindRequest, error) {
+	// convert Pollee pubkey to bytes, then pass to NewBlindSession
+	pubKeyBytes := MarshalPublicKey(p.PublicKey)
+	return NewBlindRequest(session, new(big.Int).SetBytes(pubKeyBytes))
+}
+
 type BlindRequest struct {
 	// secret stuff
 	a, b, bInv, c, m *big.Int
