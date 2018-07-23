@@ -1,7 +1,10 @@
 package blind
 
-import "io"
-import "math/big"
+import (
+	"crypto/rand"
+	"io"
+	"math/big"
+)
 
 var one = new(big.Int).SetInt64(1)
 
@@ -10,10 +13,10 @@ var one = new(big.Int).SetInt64(1)
 //
 // Implementation copied from Go's crypto/ecdsa package since
 // the function wasn't public.  Modified to always use secp256k1 curve.
-func RandFieldElement(rand io.Reader) (k *big.Int, err error) {
+func RandFieldElement() (k *big.Int, err error) {
 	params := Secp256k1().Params()
 	b := make([]byte, params.BitSize/8+8)
-	_, err = io.ReadFull(rand, b)
+	_, err = io.ReadFull(rand.Reader, b)
 	if err != nil {
 		return
 	}

@@ -2,7 +2,6 @@ package blind
 
 import (
 	"crypto/ecdsa"
-	"crypto/rand"
 	"math/big"
 )
 
@@ -19,7 +18,7 @@ func randFieldElementUnlessError(err error) (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-	return RandFieldElement(rand.Reader)
+	return RandFieldElement()
 }
 
 func NewBlindRequest(session *BlindSession, m *big.Int) (*BlindRequest, error) {
