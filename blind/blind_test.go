@@ -43,7 +43,7 @@ func TestMain(t *testing.T) {
 
 func TestNoSession(t *testing.T) {
 	registrar := NewRegistrar()
-	somekey, _ := GenerateKey(nil)
+	somekey, _ := GenerateKey()
 	_, err := registrar.BlindSign(somekey.D, somekey.PublicKey)
 	if err == nil {
 		t.Fatal()

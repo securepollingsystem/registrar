@@ -2,7 +2,6 @@ package blind
 
 import (
 	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
 	"math/big"
 )
@@ -23,7 +22,7 @@ type BlindSession struct {
 }
 
 func NewRegistrar() *BlindRegistrar {
-	keys, _ := GenerateKey(rand.Reader)
+	keys, _ := GenerateKey()
 	sessions := make(map[ecdsa.PublicKey]*big.Int)
 	return &BlindRegistrar{privateKey: keys.D, PublicKey: &keys.PublicKey,
 		sessions: sessions}
@@ -34,7 +33,7 @@ func NewRegistrar() *BlindRegistrar {
 func (bs *BlindRegistrar) NewBlindSession() (*BlindSession, error) {
 
 	// generate k and R for each user request (§4.2)
-	request, err := GenerateKey(rand.Reader)
+	request, err := GenerateKey()
 	if err != nil {
 		return nil, err
 	}
