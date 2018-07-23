@@ -19,20 +19,20 @@ func TestMain(t *testing.T) {
 	}
 
 	// Pollee blinds her message
-	// nb: the blinded message is the Mhat field on the pollee
-	pollee, err := NewBlindRequest(session, m)
+	// nb: the blinded message is the Mhat field on the request
+	request, err := NewBlindRequest(session, m)
 	if err != nil {
 		t.Fatal()
 	}
 
 	// Registrar signs the message
-	sHat, err := registrar.BlindSign(pollee.Mhat, *session.R)
+	sHat, err := registrar.BlindSign(request.Mhat, *session.R)
 	if err != nil {
 		t.Fatal()
 	}
 
 	// Pollee unblinds the signature
-	sig := pollee.BlindExtract(sHat)
+	sig := request.BlindExtract(sHat)
 
 	// Onlooker verifies signature
 	sig.M = m
