@@ -2,12 +2,14 @@ package blind
 
 import (
 	"crypto/ecdsa"
+	"crypto/sha256"
+	"crypto/rand"
 	"math/big"
 )
 
 type Pollee struct {
 	PublicKey *ecdsa.PublicKey
-	privateKey *big.Int
+	privateKey *ecdsa.PrivateKey
 	// map of sessions to blindRequests
 }
 
@@ -16,13 +18,53 @@ func NewPollee() (*Pollee, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Pollee{privateKey: keys.D, PublicKey: &keys.PublicKey}, nil
+	return &Pollee{privateKey: keys, PublicKey: &keys.PublicKey}, nil
 }
 
 func (p *Pollee) NewBlindRequest(session *BlindSession) (*BlindRequest, error) {
 	// convert Pollee pubkey to bytes, then pass to NewBlindSession
 	pubKeyBytes := MarshalPublicKey(p.PublicKey)
 	return NewBlindRequest(session, new(big.Int).SetBytes(pubKeyBytes))
+}
+
+func (p *Pollee) Sign(data []byte) ([]byte, error) {
+	return Sign(data, p.privateKey)
+}
+
+// Sign signs arbitrary data using ECDSA.
+func Sign(data []byte, privkey *ecdsa.PrivateKey) ([]byte, error) {
+	// hash message
+	digest := sha256.Sum256(data)
+
+	// sign the hash
+	r, s, err := ecdsa.Sign(rand.Reader, privkey, digest[:])
+	if err != nil {
+		return nil, err
+	}
+
+	// encode the signature {R, S}
+	// big.Int.Bytes() will need padding in the case of leading zero bytes
+	params := privkey.Curve.Params()
+	curveOrderByteSize := params.P.BitLen() / 8
+	rBytes, sBytes := r.Bytes(), s.Bytes()
+	signature := make([]byte, curveOrderByteSize*2)
+	copy(signature[curveOrderByteSize-len(rBytes):], rBytes)
+	copy(signature[curveOrderByteSize*2-len(sBytes):], sBytes)
+
+	return signature, nil
+}
+
+func Verify(data, signature []byte, pubkey *ecdsa.PublicKey) bool {
+	// hash message
+	digest := sha256.Sum256(data)
+
+	curveOrderByteSize := pubkey.Curve.Params().P.BitLen() / 8
+
+	r, s := new(big.Int), new(big.Int)
+	r.SetBytes(signature[:curveOrderByteSize])
+	s.SetBytes(signature[curveOrderByteSize:])
+
+	return ecdsa.Verify(pubkey, digest[:], r, s)
 }
 
 type BlindRequest struct {
