@@ -76,8 +76,8 @@ func TestMain(t *testing.T) {
 	sig := request.BlindExtract(sHat)
 
 	// Onlooker verifies signature
-	sig.M = new(big.Int).SetBytes(MarshalPublicKey(pollee.PublicKey))
-	if !BlindVerify(session.Q, sig) {
+	message := new(big.Int).SetBytes(MarshalPublicKey(pollee.PublicKey))
+	if !BlindVerify(message, session.Q, sig) {
 		t.Fatal("valid signature\n")
 	}
 }

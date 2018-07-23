@@ -12,12 +12,12 @@ type BlindSignature struct {
 	F    *ecdsa.PublicKey
 }
 
-func BlindVerify(Q *ecdsa.PublicKey, sig *BlindSignature) bool {
+func BlindVerify(message *big.Int, Q *ecdsa.PublicKey, sig *BlindSignature) bool {
 	crv := Secp256k1().Params()
 
 	// onlooker verifies signature (§4.5)
 	sG := ScalarBaseMult(sig.S)
-	rm := new(big.Int).Mul(new(big.Int).Mod(sig.F.X, crv.N), sig.M)
+	rm := new(big.Int).Mul(new(big.Int).Mod(sig.F.X, crv.N), message)
 	rm.Mod(rm, crv.N)
 	rmQ := ScalarMult(rm, Q)
 	rmQplusF := Add(rmQ, sig.F)
