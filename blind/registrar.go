@@ -16,6 +16,12 @@ type BlindRegistrar struct {
 	sessions map[ecdsa.PublicKey]*big.Int
 }
 
+type BlindSession struct {
+	// Q Registrar PublicKey
+	// R session key
+	Q, R *ecdsa.PublicKey
+}
+
 func NewRegistrar() *BlindRegistrar {
 	keys, _ := GenerateKey(rand.Reader)
 	sessions := make(map[ecdsa.PublicKey]*big.Int)
@@ -25,16 +31,16 @@ func NewRegistrar() *BlindRegistrar {
 
 // Request that the registrar start a blind signature protocol.  Returns
 // the registrar's public key and an EC point named R.
-func (bs *BlindRegistrar) BlindSession() (*ecdsa.PublicKey, *ecdsa.PublicKey, error) {
+func (bs *BlindRegistrar) NewBlindSession() (*BlindSession, error) {
 
 	// generate k and R for each user request (§4.2)
 	request, err := GenerateKey(rand.Reader)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	bs.sessions[request.PublicKey] = request.D
 
-	return bs.PublicKey, &request.PublicKey, nil
+	return &BlindSession{Q: bs.PublicKey, R: &request.PublicKey}, nil
 }
 
 // Signs a blinded message

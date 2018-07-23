@@ -6,7 +6,7 @@ import (
 	"math/big"
 )
 
-type BlindPollee struct {
+type BlindRequest struct {
 	// secret stuff
 	a, b, bInv, c, m *big.Int
 
@@ -22,7 +22,7 @@ func randFieldElementUnlessError(err error) (*big.Int, error) {
 	return RandFieldElement(rand.Reader)
 }
 
-func NewPollee(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindPollee, error) {
+func NewBlindRequest(session *BlindSession, m *big.Int) (*BlindRequest, error) {
 	var a, b, bInv, c *big.Int
 	var err error
 	crv := Secp256k1().Params()
@@ -41,8 +41,8 @@ func NewPollee(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindPollee, error) {
 		// pollee calculates point F (§4.2)
 		abInv := new(big.Int).Mul(a, bInv)
 		abInv.Mod(abInv, crv.N)
-		bInvR := ScalarMult(bInv, R)
-		abInvQ := ScalarMult(abInv, Q)
+		bInvR := ScalarMult(bInv, session.R)
+		abInvQ := ScalarMult(abInv, session.Q)
 		cG := ScalarBaseMult(c)
 		F = Add(bInvR, abInvQ)
 		F = Add(F, cG)
@@ -54,11 +54,11 @@ func NewPollee(Q, R *ecdsa.PublicKey, m *big.Int) (*BlindPollee, error) {
 	mHat.Add(mHat, a)
 	mHat.Mod(mHat, crv.N)
 
-	return &BlindPollee{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}, nil
+	return &BlindRequest{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}, nil
 }
 
 // Extract true signature from the blind signature
-func (br *BlindPollee) BlindExtract(sHat *big.Int) *BlindSignature {
+func (br *BlindRequest) BlindExtract(sHat *big.Int) *BlindSignature {
 	crv := Secp256k1().Params()
 
 	// pollee extracts the real signature (§4.4)
