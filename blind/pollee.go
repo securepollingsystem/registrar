@@ -10,6 +10,8 @@ import (
 type Pollee struct {
 	PublicKey *ecdsa.PublicKey
 	privateKey *ecdsa.PrivateKey
+	publicKeyBytes []byte
+	PublicKeySig *BlindSignature
 	// map of sessions to blindRequests
 }
 
@@ -23,8 +25,17 @@ func NewPollee() (*Pollee, error) {
 
 func (p *Pollee) NewBlindRequest(session *BlindSession) (*BlindRequest, error) {
 	// convert Pollee pubkey to bytes, then pass to NewBlindSession
-	pubKeyBytes := MarshalPublicKey(p.PublicKey)
-	return NewBlindRequest(session, new(big.Int).SetBytes(pubKeyBytes))
+	p.publicKeyBytes = MarshalPublicKey(p.PublicKey)
+	return NewBlindRequest(session, new(big.Int).SetBytes(p.publicKeyBytes))
+}
+
+func (p *Pollee) BlindExtract(request *BlindRequest, blindedSignedSignature *big.Int) bool {
+	PublicKeySig := request.BlindExtract(blindedSignedSignature)
+	if BlindVerify(new(big.Int).SetBytes(p.publicKeyBytes), request.session.Q, PublicKeySig) {
+		p.PublicKeySig = PublicKeySig
+		return true
+	}
+	return false
 }
 
 func (p *Pollee) Sign(data []byte) ([]byte, error) {
@@ -74,6 +85,7 @@ type BlindRequest struct {
 	// shareable stuff
 	F    *ecdsa.PublicKey
 	Mhat *big.Int // called m̂ in the paper
+	session *BlindSession
 }
 
 func randFieldElementUnlessError(err error) (*big.Int, error) {
@@ -115,7 +127,7 @@ func NewBlindRequest(session *BlindSession, m *big.Int) (*BlindRequest, error) {
 	mHat.Add(mHat, a)
 	mHat.Mod(mHat, crv.N)
 
-	return &BlindRequest{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F}, nil
+	return &BlindRequest{a: a, b: b, c: c, bInv: bInv, m: m, Mhat: mHat, F: F, session: session}, nil
 }
 
 // Extract true signature from the blind signature
