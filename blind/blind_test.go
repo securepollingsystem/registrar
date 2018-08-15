@@ -6,10 +6,7 @@ package blind
 */
 
 import (
-	"math/big"
 	"testing"
-//	"fmt"
-//	"encoding/json"
 )
 
 /*
@@ -72,13 +69,17 @@ func TestMain(t *testing.T) {
 		t.Fatal()
 	}
 
-	// Pollee unblinds the signature
-	sig := request.BlindExtract(sHat)
+	if !pollee.BlindExtract(request, sHat) {
+		t.Fatal("invalid signature");
+	}
 
-	// Onlooker verifies signature
-	message := new(big.Int).SetBytes(MarshalPublicKey(pollee.PublicKey))
-	if !BlindVerify(message, session.Q, sig) {
-		t.Fatal("valid signature\n")
+	msg := []byte("This is a message I want to sign.");
+	sig, err := pollee.Sign(msg);
+	if err != nil {
+		t.Fatal("signing error");
+	}
+	if !pollee.Verify(msg, sig) {
+		t.Fatal("verification failed");
 	}
 }
 

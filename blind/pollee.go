@@ -42,6 +42,10 @@ func (p *Pollee) Sign(data []byte) ([]byte, error) {
 	return Sign(data, p.privateKey)
 }
 
+func (p *Pollee) Verify(data, signature []byte) bool {
+	return Verify(data, signature, p.PublicKey);
+}
+
 // Sign signs arbitrary data using ECDSA.
 func Sign(data []byte, privkey *ecdsa.PrivateKey) ([]byte, error) {
 	// hash message
