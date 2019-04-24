@@ -17,7 +17,7 @@ type Voter struct {
 
 	// these will eventually be per registrar
 	sig    *blind.BlindSignature
-	pollee *blind.BlindPollee
+	pollee *blind.BlindRequest
 	//registrar registrar's publickey
 	//registration session info from blinding
 }
@@ -28,7 +28,7 @@ type VoterSignature struct {
 }
 
 func NewVoter() *Voter {
-	keys, _ := blind.GenerateKey(nil)
+	keys, _ := blind.GenerateKey()
 	return &Voter{privateKey: keys,
 		PublicKey: &keys.PublicKey}
 }
