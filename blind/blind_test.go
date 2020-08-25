@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+// This test documents the steps of a Pollee getting their key signed and 
+// using it to create a signed scree.
 func TestMain(t *testing.T) {
 	// Create a registrar
 	registrar := NewRegistrar()
@@ -31,6 +33,9 @@ func TestMain(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
+	
+	// Pollee brings her blinded message to the registrar
+        // Registar verifies the pollee's identity, and receives her blinded message
 
 	// Registrar signs the message
 	blindedSignature, err := registrar.BlindSign(request.Mhat, *session.R)
@@ -38,19 +43,24 @@ func TestMain(t *testing.T) {
 		t.Fatal()
 	}
 
+	// Registar gives the signature of the blinded message to the Pollee
+
 	// Pollee extracts the blinded signature and stores it
 	if !pollee.BlindExtract(request, blindedSignature) {
 		t.Fatal("invalid signature");
 	}
 
-	// Pollee signs some message
+	// The Pollee then finds opinions and collects them as a screed
 	msg := []byte("This is a message I want to sign.");
+	
+	// Pollee signs her screed
 	sig, err := pollee.Sign(msg);
 	if err != nil {
 		t.Fatal("signing error");
 	}
 
-	// Pollee verifies the signature to the message
+	// Anyone can verify the signed screed (`sig` + `msg`), but this next line just
+	// demonstrates the pollee can verify her own message
 	if !pollee.Verify(msg, sig) {
 		t.Fatal("verification failed");
 	}
